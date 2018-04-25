@@ -13,6 +13,13 @@ class Uploader extends Component {
     for (let idx in files) {
       const file = files[idx]
       console.log('file', file)
+      const reader  = new FileReader();
+      reader.onload = function(e)  {
+          var image = document.createElement("img");
+          image.src = e.target.result;
+          document.body.appendChild(image);
+        }
+      reader.readAsDataURL(file);
       const nextFileIdx = (currFileIdx < (maxFiles - 1))
         ? (currFileIdx + 1) : 0
       console.log('nextFileIdx', nextFileIdx)
