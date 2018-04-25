@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Dropzone from 'react-dropzone'
+import mergeImg from 'merge-img'
 
 class Uploader extends Component {
   state = {
