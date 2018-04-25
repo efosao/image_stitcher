@@ -14,7 +14,7 @@ class Uploader extends PureComponent {
   onImageDrop = (files) => {
     const { currFileIdx, images, maxFiles } = this.state
     // clone image collection
-    const newImgObj = cloneDeep(images)
+    const newImgObj = {}
 
     var nextFileIdx = currFileIdx
 
