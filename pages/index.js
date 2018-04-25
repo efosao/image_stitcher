@@ -28,14 +28,14 @@ class Uploader extends Component {
           // image is loaded into DOM so the `width` can be read
           // image is immediately removed afterwards
           document.body.removeChild(img)
-          const { width } = img
+          const { naturalWidth, width  } = img
 
           // clone image collection
           const newImgArray = images.map(o => ({ ...o }))
           newImgArray[currFileIdx] = {
             data,
             name: file.name,
-            width
+            width: naturalWidth || width
           }
 
           updateImagesInState(newImgArray)
