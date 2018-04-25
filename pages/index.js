@@ -1,65 +1,68 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import Dropzone from 'react-dropzone'
 import mergeImages from 'merge-images'
+import cloneDeep from 'clone-deep'
 
-class Uploader extends Component {
+class Uploader extends PureComponent {
   state = {
-    images: [],
+    images: {},
     currFileIdx: 0,
-    maxFiles: 4
-  }
-
-  componentDidUpdate () {
-    this.drawImages()
+    maxFiles: 4,
+    resultImgSrc: null
   }
 
   onImageDrop = (files) => {
-    const { currFileIdx, images } = this.state
-    const { updateImagesInState } = this
+    const { currFileIdx, images, maxFiles } = this.state
+    // clone image collection
+    const newImgObj = cloneDeep(images)
+
+    var nextFileIdx = currFileIdx
+
     for (let idx in files) {
       const file = files[idx]
-      const reader  = new FileReader();
-      reader.onload = function(e)  {
+      const reader  = new FileReader()
+      const imagesElem = document.getElementById('images')
+      reader.onload = (e) => {
         const data = e.target.result
         const img  = document.createElement('img')
         img.src = data
+        imagesElem.appendChild(img)
         img.addEventListener('load', () => {
           // get image width
           // image is loaded into DOM so the `width` can be read
           // image is immediately removed afterwards
-          document.body.removeChild(img)
+          imagesElem.removeChild(img)
           const { naturalWidth, width  } = img
 
-          // clone image collection
-          const newImgArray = images.map(o => ({ ...o }))
-          newImgArray[currFileIdx] = {
+          const key = `key_${idx}`
+          newImgObj[key] = {
             data,
             name: file.name,
             width: naturalWidth || width
           }
 
-          updateImagesInState(newImgArray)
+          nextFileIdx = (nextFileIdx < (maxFiles - 1)) ? (nextFileIdx + 1) : 0
+          console.log('%% nextFileIdx', nextFileIdx)
         })
-        document.body.appendChild(img)
       }
-
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file)
     }
+
+    this.updateImagesInState(newImgObj, nextFileIdx)
+
   }
 
-  updateImagesInState = (images) => {
-    const { currFileIdx, maxFiles } = this.state
-    const nextFileIdx = (currFileIdx < (maxFiles - 1)) ? (currFileIdx + 1) : 0
+  updateImagesInState = (images, nextFileIdx) => {
     this.setState({
       currFileIdx: nextFileIdx,
       images
-    })
+    }, () => setTimeout(() => this.drawImages(), 500))
   }
 
   getImageMergeOptions = () => {
     const { images } = this.state
     // we are calculating the maximum width of the [canvas] needed to hold the image
-    const width = images.reduce((acc, curr, idx) => (curr.width + acc), 0)
+    const width = Object.keys(images).reduce((acc, curr, idx) => (images[curr].width + acc), 0)
     return {
       width
     }
@@ -70,21 +73,26 @@ class Uploader extends Component {
     let cummHorizontalWidth = 0
 
     // format image data for `merge-images` plugin
-    const imgDataArr = images.map(({ data, width }, idx) => {
-      const result = {
-        src: data,
-        x: cummHorizontalWidth,
-        y: 0
-      }
-      cummHorizontalWidth += width
-      return result
-    })
-
+    const imgDataArr = Object
+      .keys(images)
+      .map((key, idx) => {
+        const { data, width } = images[key]
+        const result = {
+          src: data,
+          x: cummHorizontalWidth,
+          y: 0
+        }
+        cummHorizontalWidth += width
+        return result
+      })
+ 
     const options = this.getImageMergeOptions()
 
     // draw the images into empty image tag in view
-    mergeImages(imgDataArr, options)
-      .then(b64 => document.querySelector('img').src = b64)
+    if (imgDataArr.length > 0) {
+      mergeImages(imgDataArr, options)
+        .then(b64 => this.setState({ resultImgSrc: b64 }))
+    }
   }
 
   render () {
@@ -100,7 +108,9 @@ class Uploader extends Component {
             </div>
           </Dropzone>
 
-          <img />
+          <img style={{ display: this.state.resultImgSrc ? 'inherit' : 'hidden' }} src={this.state.resultImgSrc} />
+
+          <div id='images'></div>
 
         <style global jsx>{`
           body {
