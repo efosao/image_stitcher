@@ -8,28 +8,40 @@ class Uploader extends Component {
     maxFiles: 4
   }
   onDrop = (files) => {
-    const { images, currFileIdx, maxFiles } = this.state
+    const { currFileIdx, images } = this.state
     console.log('you dropped stuff on me', files)
+    const { updateImage } = this
     for (let idx in files) {
       const file = files[idx]
       console.log('file', file)
       const reader  = new FileReader();
       reader.onload = function(e)  {
-          var image = document.createElement("img");
-          image.src = e.target.result;
-          document.body.appendChild(image);
+          const image = document.createElement("img");
+          const data = e.target.result
+          console.log('data', data)
+          image.src = data
+          document.body.appendChild(image)
+          images[currFileIdx] = {
+            data,
+            name: file.name
+          }
+          updateImage(images)
         }
       reader.readAsDataURL(file);
-      const nextFileIdx = (currFileIdx < (maxFiles - 1))
-        ? (currFileIdx + 1) : 0
-      console.log('nextFileIdx', nextFileIdx)
-      images[currFileIdx] = { name: file.name }
-      this.setState({
-        currFileIdx: nextFileIdx,
-        images
-      })
+      
     }
   }
+
+  updateImage = (images) => {
+    const { currFileIdx, maxFiles } = this.state
+    const nextFileIdx = (currFileIdx < (maxFiles - 1)) ? (currFileIdx + 1) : 0
+    console.log('nextFileIdx', nextFileIdx)
+    this.setState({
+      currFileIdx: nextFileIdx,
+      images
+    })
+  }
+
   render () {
     console.log('this.state', this.state)
     return (
