@@ -28,16 +28,26 @@ class Uploader extends Component {
     return (
       <div>
         <link href="https://fonts.googleapis.com/css?family=Tajawal" rel="stylesheet" />
-        <h1>Welcome to next.js!</h1>
-        <Dropzone onDrop={this.onDrop}><div className='drop'>ddd</div></Dropzone>
+        <h1>Image Stitcher</h1>
+        <h2>By Efosa Oyegun</h2>
+        
+          <Dropzone onDrop={this.onDrop}>
+            <div className='drop'>
+                <p>Drop your images in the box below</p>
+            </div>
+          </Dropzone>
         <style jsx>{`
           .drop {
-            background-color: red;
-            height: 100px;
-            width: 100px;
+            background-color: lightgreen;
+            height: 100%;
+            width: 100%;
+          }
+          .drop p {
+            margin: 0;
+            padding: 10px;
           }
         `}</style>
-        <p>Welcome to next.js!</p>
+        
         <style global jsx>{`
           body {
             font-family: "Tajawal", sans-serif;
